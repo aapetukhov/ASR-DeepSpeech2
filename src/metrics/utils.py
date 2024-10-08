@@ -1,4 +1,5 @@
 import editdistance
+
 # Based on seminar materials
 
 # Don't forget to support cases when target_text == ''
@@ -18,8 +19,8 @@ def calc_wer(target_text, predicted_text) -> float:
         if predicted_text:
             return 1
         return 0
-    
-    target_splitted = target_text.split(' ')
-    pred_splitted = predicted_text.split(' ')
+
+    target_splitted = target_text.split(" ")
+    pred_splitted = predicted_text.split(" ")
 
     return editdistance.eval(target_splitted, pred_splitted) / len(target_splitted)
