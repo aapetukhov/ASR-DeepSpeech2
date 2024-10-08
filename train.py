@@ -29,9 +29,17 @@ def main(config):
     writer = instantiate(config.writer, logger, project_config)
 
     if config.trainer.device == "auto":
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        if torch.cuda.is_available():
+            device = "cuda"
+        # elif torch.backends.mps.is_available():
+        #     # FIXME: tprch.ctc_loss не работает на mps.
+        #     device = "mps"
+        else:
+            device = "cpu"
     else:
         device = config.trainer.device
+
+    logger.info(f"Using device: {device}")
 
     # setup text_encoder
     text_encoder = instantiate(config.text_encoder)
