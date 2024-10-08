@@ -70,7 +70,7 @@ class CTCTextEncoder:
                 if ind != empty_ind:
                     decoded.append(self.ind2char[ind])
             last_char_ind = ind
-        return ''.join(decoded)
+        return "".join(decoded)
 
     @staticmethod
     def normalize_text(text: str):

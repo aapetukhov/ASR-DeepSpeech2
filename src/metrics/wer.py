@@ -1,12 +1,11 @@
 from typing import List
 
+import numpy as np
 import torch
 from torch import Tensor
 
 from src.metrics.base_metric import BaseMetric
 from src.metrics.utils import calc_wer
-
-import numpy as np
 from src.text_encoder.ctc_text_encoder import CTCTextEncoder
 
 # TODO beam search / LM versions
@@ -30,7 +29,7 @@ class ArgmaxWERMetric(BaseMetric):
             pred_text = self.text_encoder.ctc_decode(log_prob_vec[:length])
             wers.append(calc_wer(target_text, pred_text))
         return sum(wers) / len(wers)
-    
+
 
 class BeamWERMetric(BaseMetric):
     def __init__(self, text_encoder: CTCTextEncoder, beam_size: int, *args, **kwargs):
@@ -39,11 +38,7 @@ class BeamWERMetric(BaseMetric):
         self.beam_size = beam_size
 
     def __call__(
-        self, 
-        log_probs: Tensor, 
-        log_probs_length: Tensor, 
-        text: List[str], 
-        **kwargs
+        self, log_probs: Tensor, log_probs_length: Tensor, text: List[str], **kwargs
     ) -> float:
         lengths = log_probs_length.cpu().numpy()
         predictions = np.exp(log_probs.cpu().numpy())
@@ -51,14 +46,20 @@ class BeamWERMetric(BaseMetric):
         def get_pred_text(log_prob_vec, length):
             """Возвращает предсказанный текст через beam search или decode"""
             if hasattr(self.text_encoder, "ctc_beam_search"):
-                return self.text_encoder.ctc_beam_search(log_prob_vec[:length], self.beam_size)
+                return self.text_encoder.ctc_beam_search(
+                    log_prob_vec[:length], self.beam_size
+                )
             return self.text_encoder.decode(log_prob_vec[:length])
 
         wers = [
-            calc_wer(CTCTextEncoder.normalize_text(target_text), get_pred_text(log_prob_vec, length))
+            calc_wer(
+                CTCTextEncoder.normalize_text(target_text),
+                get_pred_text(log_prob_vec, length),
+            )
             for log_prob_vec, length, target_text in zip(predictions, lengths, text)
         ]
 
         return np.mean(wers)
-    
+
+
 # TODO: add LM version
