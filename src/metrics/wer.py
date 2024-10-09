@@ -41,22 +41,22 @@ class BeamWERMetric(BaseMetric):
         self, log_probs: Tensor, log_probs_length: Tensor, text: List[str], **kwargs
     ) -> float:
         lengths = log_probs_length.cpu().numpy()
-        predictions = np.exp(log_probs.cpu().numpy())
+        # predictions = np.exp(log_probs.detach().cpu().numpy())
+        log_probs_cpu = log_probs.detach().cpu().numpy()
 
-        def get_pred_text(log_prob_vec, length):
-            """Возвращает предсказанный текст через beam search или decode"""
+        def get_pred_text(log_prob_vec, length) -> str:
             if hasattr(self.text_encoder, "ctc_beam_search"):
                 return self.text_encoder.ctc_beam_search(
                     log_prob_vec[:length], self.beam_size
                 )
-            return self.text_encoder.decode(log_prob_vec[:length])
+            return self.text_encoder.ctc_decode(log_prob_vec[:length])
 
         wers = [
             calc_wer(
                 CTCTextEncoder.normalize_text(target_text),
                 get_pred_text(log_prob_vec, length),
             )
-            for log_prob_vec, length, target_text in zip(predictions, lengths, text)
+            for log_prob_vec, length, target_text in zip(log_probs_cpu, lengths, text)
         ]
 
         return np.mean(wers)
