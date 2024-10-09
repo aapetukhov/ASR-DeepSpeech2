@@ -27,7 +27,7 @@ def collate_fn(dataset_items: list[dict]):
         spectrogram_lengths.append(item["spectrogram"].shape[2])
 
         spectrogram = item["spectrogram"].squeeze(0).transpose(0, -1)
-        spectrogram = torch.log(spectrogram + 1e-7)
+        # spectrogram = torch.log(spectrogram + 1e-7)
         spectrograms.append(spectrogram)
 
         text_encoded = item["text_encoded"].squeeze(0).transpose(0, -1)
