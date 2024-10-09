@@ -1,6 +1,6 @@
 import re
-from string import ascii_lowercase
 from collections import defaultdict
+from string import ascii_lowercase
 
 import torch
 
@@ -72,16 +72,16 @@ class CTCTextEncoder:
                     decoded.append(self.ind2char[ind])
             last_char_ind = ind
         return "".join(decoded)
-    
+
     def ctc_beam_search(self, log_probs: torch.tensor, beam_size: int):
         time_dim, char_dim = log_probs.shape
         if char_dim > len(self.vocab):
-            raise Exception(f"log_probs has shape {log_probs.shape}, char_dim ({char_dim}) > len(self.vocab) ({len(self.vocab)})")
+            raise Exception(
+                f"log_probs has shape {log_probs.shape}, char_dim ({char_dim}) > len(self.vocab) ({len(self.vocab)})"
+            )
 
-        dp = {
-            ('', self.EMPTY_TOK): 1.0
-        }
-        
+        dp = {("", self.EMPTY_TOK): 1.0}
+
         def extend_path_and_merge(dp, next_token_probs: torch.tensor, ind2char: dict):
             new_dp = defaultdict(float)
             for ind, next_token_prob in enumerate(next_token_probs):
@@ -94,21 +94,27 @@ class CTCTextEncoder:
                             new_prefix = prefix + cur_char
                         else:
                             new_prefix = prefix
-                    new_dp[(new_prefix, cur_char)] += v + next_token_prob # суммируем логирафмы, т.е. перемножаем пробы
+                    new_dp[(new_prefix, cur_char)] += (
+                        v + next_token_prob
+                    )  # суммируем логирафмы, т.е. перемножаем пробы
             return new_dp
 
         def truncate_paths(dp, beam_size):
-            return dict(sorted(list(dp.items()), key=lambda x: -x[1], reverse=True)[ : beam_size])
-        
+            return dict(
+                sorted(list(dp.items()), key=lambda x: -x[1], reverse=True)[:beam_size]
+            )
+
         for probs in log_probs:
-            dp = extend_path_and_merge(dp=dp, next_token_probs=probs, ind2char=self.ind2char)
+            dp = extend_path_and_merge(
+                dp=dp, next_token_probs=probs, ind2char=self.ind2char
+            )
             dp = truncate_paths(dp, beam_size)
 
         dp = [(prefix, proba) for (prefix, _), proba in dp.items()]
 
-        return dp[0][0] # dp[0] - это лучшие (prefix, proba), а dp[0][0] - соответственно лучший префикс
-
-
+        return dp[0][
+            0
+        ]  # dp[0] - это лучшие (prefix, proba), а dp[0][0] - соответственно лучший префикс
 
     @staticmethod
     def normalize_text(text: str):
