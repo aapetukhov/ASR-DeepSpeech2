@@ -107,7 +107,7 @@ saved/
 wandb/
 .cometml-runs/
 outputs/
-deepspeech2_onebatch/
+deepspeech2_onebatchtest/
 
 # editor, os cache directory
 .vscode/
