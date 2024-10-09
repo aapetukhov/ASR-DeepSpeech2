@@ -12,7 +12,13 @@ class NormGRU(nn.Module):
             dropout_rate (float): Dropout rate.
         """
         super().__init__()
-        self.gru = nn.GRU(input_dim, hidden_dim, dropout=dropout_rate, batch_first=False, bidirectional=True)
+        self.gru = nn.GRU(
+            input_dim,
+            hidden_dim,
+            dropout=dropout_rate,
+            batch_first=False,
+            bidirectional=True,
+        )
         self.batch_norm = nn.BatchNorm1d(hidden_dim)
 
     def forward(self, inputs, hidden_state=None):
@@ -25,7 +31,7 @@ class NormGRU(nn.Module):
         outputs = outputs.view(batch_size * time_steps, -1)
         outputs = self.batch_norm(outputs)
         outputs = outputs.view(time_steps, batch_size, -1).contiguous()
-        
+
         return outputs, hidden_state
 
 
@@ -44,7 +50,7 @@ class DeepSpeech2(nn.Module):
         self.conv_params = {
             "conv1": {"padding": (20, 5), "kernel_size": (41, 11), "stride": (2, 2)},
             "conv2": {"padding": (10, 5), "kernel_size": (21, 11), "stride": (2, 2)},
-            "conv3": {"padding": (10, 5), "kernel_size": (21, 11), "stride": (2, 1)}
+            "conv3": {"padding": (10, 5), "kernel_size": (21, 11), "stride": (2, 1)},
         }
 
         self.conv = Sequential(
@@ -63,10 +69,12 @@ class DeepSpeech2(nn.Module):
         rnn_input_dim *= 96
 
         self.rnns = Sequential(
-            *[NormGRU(
-                (hidden_size if i > 0 else rnn_input_dim), hidden_size, rnn_dropout
-                ) 
-            for i in range(num_rnn_layers)]
+            *[
+                NormGRU(
+                    (hidden_size if i > 0 else rnn_input_dim), hidden_size, rnn_dropout
+                )
+                for i in range(num_rnn_layers)
+            ]
         )
 
         self.fc = nn.Linear(hidden_size, n_tokens)
@@ -81,7 +89,9 @@ class DeepSpeech2(nn.Module):
         """
         size = n_feats
         for conv_param in self.conv_params.values():
-            size = (size + 2 * conv_param['padding'][0] - conv_param['kernel_size'][0]) // conv_param['stride'][0] + 1
+            size = (
+                size + 2 * conv_param["padding"][0] - conv_param["kernel_size"][0]
+            ) // conv_param["stride"][0] + 1
         return size
 
     def forward(self, spectrogram, spectrogram_length, **batch):
@@ -97,7 +107,9 @@ class DeepSpeech2(nn.Module):
         """
         x = self.conv(spectrogram.unsqueeze(1))
         x = x.view(x.shape[0], x.shape[1] * x.shape[2], x.shape[3])
-        x = x.transpose(1, 2).transpose(0, 1).contiguous()  # n_tokens x batch_size x (n_channels * n_freqs)
+        x = (
+            x.transpose(1, 2).transpose(0, 1).contiguous()
+        )  # n_tokens x batch_size x (n_channels * n_freqs)
 
         h = None
         for rnn in self.rnns:
@@ -111,7 +123,7 @@ class DeepSpeech2(nn.Module):
         log_probs = nn.functional.log_softmax(logits, dim=-1)
         return {
             "log_probs": log_probs,
-            "log_probs_length": self.transform_input_lengths(spectrogram_length)
+            "log_probs_length": self.transform_input_lengths(spectrogram_length),
         }
 
     def transform_input_lengths(self, input_lengths):
@@ -125,7 +137,11 @@ class DeepSpeech2(nn.Module):
             transformed input_lengths (Tensor): new temporal lengths
         """
         for conv_param in self.conv_params.values():
-            input_lengths = (input_lengths + 2 * conv_param['padding'][1] - conv_param['kernel_size'][1]) // conv_param['stride'][1] + 1
+            input_lengths = (
+                input_lengths
+                + 2 * conv_param["padding"][1]
+                - conv_param["kernel_size"][1]
+            ) // conv_param["stride"][1] + 1
         return input_lengths
 
     def __str__(self):
