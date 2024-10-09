@@ -85,7 +85,7 @@ class BaseDataset(Dataset):
         text_encoded = self.text_encoder.encode(text)
 
         spectrogram = self.get_spectrogram(audio)
-        # spectrogram = torch.log(spectrogram + 1e-5) # this is only needed for beautiful pictures when logging
+        spectrogram = torch.log(spectrogram + 1e-5) # this is only needed for beautiful pictures when logging
 
         instance_data = {
             "audio": audio,
