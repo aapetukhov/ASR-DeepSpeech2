@@ -1,4 +1,5 @@
-_target_: src.model.BaselineModel
+_target_: src.model.DeepSpeech2
 n_feats: 128
-fc_hidden: 512
+hidden_size: 512
 num_rnn_layers: 3
+rnn_dropout: 0.2

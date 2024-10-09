@@ -1,0 +1,94 @@
+model:
+  _target_: src.model.DeepSpeech2
+  n_feats: 128
+  hidden_size: 512
+  num_rnn_layers: 3
+  rnn_dropout: 0.2
+writer:
+  _target_: src.logger.WandBWriter
+  project_name: pytorch_template_asr_example
+  entity: null
+  run_name: deepspeech_beamsearch_1
+  mode: online
+  loss_names:
+  - loss
+  log_checkpoints: false
+  id_length: 8
+  run_id: w6z6zmky
+metrics:
+  train:
+  - _target_: src.metrics.BeamCERMetric
+    name: training_CER_(BeamSearch)
+  - _target_: src.metrics.BeamWERMetric
+    name: training_WER_(BeamSearch)
+  inference:
+  - _target_: src.metrics.BeamCERMetric
+    name: eval_CER_(BeamSearch)
+  - _target_: src.metrics.BeamWERMetric
+    name: eval_WER_(BeamSearch)
+datasets:
+  train:
+    _target_: src.datasets.LibrispeechDataset
+    part: dev-clean
+    max_audio_length: 20.0
+    max_text_length: 200
+    limit: 2
+    instance_transforms: ${transforms.instance_transforms.train}
+  val:
+    _target_: src.datasets.LibrispeechDataset
+    part: dev-clean
+    max_audio_length: 20.0
+    max_text_length: 200
+    limit: 2
+    instance_transforms: ${transforms.instance_transforms.inference}
+dataloader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 2
+  num_workers: 2
+  pin_memory: true
+transforms:
+  instance_transforms:
+    train:
+      get_spectrogram:
+        _target_: torchaudio.transforms.MelSpectrogram
+        sample_rate: 16000
+      audio:
+        _target_: torchvision.transforms.v2.Compose
+        transforms:
+        - _target_: src.transforms.wav_augs.Gain
+    inference:
+      get_spectrogram:
+        _target_: torchaudio.transforms.MelSpectrogram
+        sample_rate: 16000
+  batch_transforms:
+    train: null
+    inference: null
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 0.0003
+lr_scheduler:
+  _target_: torch.optim.lr_scheduler.OneCycleLR
+  max_lr: 0.01
+  pct_start: 0.1
+  steps_per_epoch: ${trainer.epoch_len}
+  epochs: ${trainer.n_epochs}
+  anneal_strategy: cos
+loss_function:
+  _target_: src.loss.CTCLossWrapper
+text_encoder:
+  _target_: src.text_encoder.CTCTextEncoder
+trainer:
+  log_step: 50
+  n_epochs: 5
+  epoch_len: 20
+  device_tensors:
+  - spectrogram
+  - text_encoded
+  resume_from: null
+  device: auto
+  override: true
+  monitor: min val_WER_(Argmax)
+  save_period: 5
+  early_stop: ${trainer.n_epochs}
+  save_dir: deepspeech2_onebatchtest
+  seed: 1
