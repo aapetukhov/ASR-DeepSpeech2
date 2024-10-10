@@ -2,7 +2,7 @@ defaults:
   - model: deepspeech2
   - writer: wandb
   - metrics: default
-  - datasets: default
+  - datasets: default_360
   - dataloader: default
   - transforms: example_only_instance
   - _self_

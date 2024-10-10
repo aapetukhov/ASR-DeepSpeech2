@@ -95,16 +95,17 @@ class CTCTextEncoder:
                         else:
                             new_prefix = prefix
                     new_dp[(new_prefix, cur_char)] += (
-                        v + next_token_prob
-                    )  # суммируем логирафмы, т.е. перемножаем пробы
+                        v * next_token_prob
+                    )  # перемножаем пробы
             return new_dp
 
         def truncate_paths(dp, beam_size):
+
             return dict(
                 sorted(list(dp.items()), key=lambda x: -x[1], reverse=True)[:beam_size]
             )
 
-        for probs in log_probs:
+        for probs in torch.exp(log_probs):
             dp = extend_path_and_merge(
                 dp=dp, next_token_probs=probs, ind2char=self.ind2char
             )
