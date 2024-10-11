@@ -1,1 +1,1 @@
-from src.transforms.transform import RandomTransform
+from .transform import RandomTransform

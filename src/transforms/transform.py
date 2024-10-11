@@ -1,26 +1,35 @@
 import torch.nn as nn
 from torch import Tensor
 import random
+from torch import Tensor
 
-from wav_augs import Identity, Gain, PitchShifting, TimeStretching, ColoredNoise
+from .wav_augs import Identity, Gain, PitchShifting, ColoredNoise, SpeedChange
 from hydra.utils import instantiate
+from omegaconf import DictConfig, ListConfig
+from typing import List, Dict
 
 
 class RandomTransform(nn.Module):
-    def __init__(self, *args):
+    def __init__(self, transforms: List[Dict]):
         super().__init__()
-        self.transforms = []
+        self.transforms = nn.ModuleList()
         self.probs = []
-        for transform_cfg in args:
-            transform = instantiate(transform_cfg)
-            prob = transform_cfg.get("p", 1.0)
 
+        for item in transforms:
+            transform_cfg = item['transform_cfg']
+            prob = item['p']
+
+            if isinstance(transform_cfg, (DictConfig, ListConfig, dict)):
+                transform = instantiate(transform_cfg)
+            else:
+                transform = transform_cfg 
+            
             self.transforms.append(transform)
             self.probs.append(prob)
 
         total_prob = sum(self.probs)
-        assert abs(total_prob - 1.0) < 1e-6, f"Probs have to add up to 1, yours add up to {total_prob}"
+        assert abs(total_prob - 1.0) < 1e-6, f"Probs must sum to 1, but they sum to {total_prob}"
 
-    def __call__(self, data: Tensor) -> Tensor:
+    def forward(self, data: Tensor) -> Tensor:
         transform = random.choices(self.transforms, self.probs)[0]
         return transform(data)
