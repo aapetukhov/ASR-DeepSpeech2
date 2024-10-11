@@ -1,36 +1,39 @@
 train:
-
   get_spectrogram: # special key for getting spectrogram
     _target_: torchaudio.transforms.MelSpectrogram
     sample_rate: 16000
-
   audio: # name of the tensor on which we apply transform
-    _target_: torchvision.transforms.v2.Compose
+    _target_: src.transforms.RandomTransform
     transforms:
-      _target_: src.transforms.x
-      _args_: # some of Identity, Gain, PitchShifting, TimeStretching, ColoredNoise, torchvision.transforms
-        - _target_: src.transforms.wav_augs.Identity
-          p: 0.6
-        - _target_: src.transforms.wav_augs.Gain
+      - transform_cfg:
+          _target_: src.transforms.wav_augs.Identity
+        p: 0.6
+      - transform_cfg:
+          _target_: src.transforms.wav_augs.Gain
           sample_rate: 16000
-          p: 0.1
-        - _target_: src.transforms.wav_augs.PitchShifting
+        p: 0.1
+      - transform_cfg:
+          _target_: src.transforms.wav_augs.PitchShifting
           sample_rate: 16000
-          n_steps: 2
-          p: 0.1
-        - _target_: src.transforms.wav_augs.ColoredNoise
+          min_transpose_semitones: -2
+          max_transpose_semitones: 2
+        p: 0.1
+      - transform_cfg:
+          _target_: src.transforms.wav_augs.ColoredNoise
           sample_rate: 16000
-          color: 'white'
-          p: 0.1
-        - _target_: src.transforms.wav_augs.TimeStretching
+          min_snr_in_db: 5
+          max_snr_in_db: 15
+        p: 0.1
+      - transform_cfg:
+          _target_: src.transforms.wav_augs.SpeedChange
           sample_rate: 16000
-          factor: 1.2
-          p: 0.05
-        - _target_: src.transforms.wav_augs.TimeStretching
+          speed_factor: 0.8
+        p: 0.05
+      - transform_cfg:
+          _target_: src.transforms.wav_augs.SpeedChange
           sample_rate: 16000
-          factor: 0.8
-          p: 0.05
-
+          speed_factor: 1.2
+        p: 0.05
 
 inference:
   get_spectrogram:
