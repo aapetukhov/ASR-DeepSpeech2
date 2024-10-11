@@ -16,3 +16,4 @@ black
 isort
 pre-commit
 editdistance
+wget
