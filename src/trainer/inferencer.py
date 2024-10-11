@@ -3,6 +3,7 @@ from tqdm.auto import tqdm
 
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
+from src.text_encoder import CTCTextEncoder
 
 
 class Inferencer(BaseTrainer):
@@ -20,7 +21,7 @@ class Inferencer(BaseTrainer):
         config,
         device,
         dataloaders,
-        text_encoder,
+        text_encoder: CTCTextEncoder,
         save_path,
         metrics=None,
         batch_transforms=None,
@@ -144,7 +145,9 @@ class Inferencer(BaseTrainer):
             # https://github.com/pytorch/pytorch/issues/1995
             logits = batch["logits"][i].clone()
             label = batch["labels"][i].clone()
-            pred_label = logits.argmax(dim=-1)
+            length = batch["log_probs_length"][i].clone()
+            # pred_label = logits.argmax(dim=-1)
+            pred_label = self.text_encoder.ctc_beam_search(logits[ : length], 3)
 
             output_id = current_id + i
 

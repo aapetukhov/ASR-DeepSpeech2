@@ -5,6 +5,7 @@ import random
 from wav_augs import Identity, Gain, PitchShifting, TimeStretching, ColoredNoise
 from hydra.utils import instantiate
 
+
 class RandomTransform(nn.Module):
     def __init__(self, *args):
         super().__init__()
