@@ -140,11 +140,11 @@ class BaseTrainer:
 
         if config.trainer.get("resume_from") is not None:
             # resume_path = self.checkpoint_dir / config.trainer.resume_from
-            resume_path = ROOT_PATH / config.trainer.resume_from #чтобы просто надо было указывать путь до файла с конфигом
+            resume_path = ROOT_PATH / config.trainer.resume_from # чтобы просто надо было указывать путь до файла с конфигом
             self._resume_checkpoint(resume_path)
 
         if config.trainer.get("from_pretrained") is not None:
-            self._from_pretrained(config.trainer.get("from_pretrained"))
+            self._from_pretrained(config.trainer.get("from_pretrained")) # просто путь до предобученной модели
 
     def train(self):
         """
