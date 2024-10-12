@@ -60,7 +60,6 @@ class CTCTextEncoder:
         return "".join([self.ind2char[int(ind)] for ind in inds]).strip()
 
     def ctc_decode(self, inds) -> str:
-        # TODO: check for bugs
         decoded = []
         empty_ind = self.char2ind[self.EMPTY_TOK]
         last_char_ind = empty_ind
@@ -116,6 +115,9 @@ class CTCTextEncoder:
         return dp[0][
             0
         ]  # dp[0] - это лучшие (prefix, proba), а dp[0][0] - соответственно лучший префикс
+
+    def lm_ctc_beam_search(self, log_probs: torch.tensor, beam_size: int):
+        raise NotImplementedError
 
     @staticmethod
     def normalize_text(text: str):
