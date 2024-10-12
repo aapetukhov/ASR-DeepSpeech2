@@ -18,3 +18,5 @@ pre-commit
 editdistance
 wget
 pyctcdecode
+flashlight-text
+kenlm
