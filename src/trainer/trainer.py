@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import torch
 import numpy as np
+import random
 
 from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
@@ -95,27 +96,37 @@ class Trainer(BaseTrainer):
         self.writer.add_image("spectrogram", image)
 
     def log_predictions(
-        self, text, log_probs: torch.tensor, log_probs_length: torch.tensor, audio_path, audio: torch.tensor, examples_to_log=10, **batch
+        self, text, log_probs: torch.tensor, log_probs_length: torch.tensor, audio_path, audio: torch.tensor, examples_to_log=5, **batch
     ):
         # TODO add beam search
         # Note: by improving text encoder and metrics design
         # this logging can also be improved significantly
 
-        argmax_inds = log_probs.cpu().argmax(-1).numpy()
+        # сперва будем выбирать случайные examples_to_log объектов, а потом всё считать
+        indices = random.sample(range(len(text)), min(examples_to_log, len(text)))
+
+        texts = [text[i] for i in indices]
+        log_probas = log_probs[indices].detach().cpu().numpy()
+        log_probs_lengths = log_probs_length[indices].detach().cpu().numpy()
+        audio_paths = [audio_path[i] for i in indices]
+        audios = audio[indices].squeeze().numpy()
+
+        argmax_inds = log_probas.argmax(-1)
         argmax_inds = [
             inds[: int(ind_len)]
-            for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
+            for inds, ind_len in zip(argmax_inds, log_probs_lengths)
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
 
-        bs_texts = [self.text_encoder.ctc_beam_search(log_probs[: length].numpy(), 3) for length in log_probs_length.detach().cpu().numpy()]
-        lm_texts = [self.text_encoder.ctc_lm_beam_search(log_probs[: length].numpy(), 30) for length in log_probs_length.detach().cpu().numpy()]
+        # CTC bs
+        bs_texts = [self.text_encoder.ctc_beam_search(proba[: length], 3) for proba, length in zip(log_probas, log_probs_lengths)]
+        lm_texts = [self.text_encoder.lm_ctc_beam_search(proba[: length], 30) for proba, length in zip(log_probas, log_probs_lengths)]
 
-        tuples = list(zip(argmax_texts, bs_texts, lm_texts, text, argmax_texts_raw, audio_path))
+        tuples = list(zip(argmax_texts, bs_texts, lm_texts, texts, argmax_texts_raw, audio_paths, audios))
 
         rows = {}
-        for pred_argmax, pred_bs, pred_lm, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        for pred_argmax, pred_bs, pred_lm, target, raw_pred, audio_path, audio_aug in tuples:
             target = self.text_encoder.normalize_text(target)
             wer = calc_wer(target, pred_argmax) * 100
             cer = calc_cer(target, pred_argmax) * 100
@@ -127,8 +138,7 @@ class Trainer(BaseTrainer):
             lm_cer = calc_cer(target, pred_lm) * 100
 
             rows[Path(audio_path).name] = {
-                "audio": self.writer.wandb.Audio(audio_path),
-                "aug": self.writer.wandb.Audio(audio.squeeze().numpy(), sample_rate=16000),
+                "audio": self.writer.wandb.Audio(audio_aug, sample_rate=16000),
                 "target": target,
                 "raw prediction": raw_pred,
                 "predictions": pred_argmax,
@@ -141,6 +151,8 @@ class Trainer(BaseTrainer):
                 "wer_lm": lm_wer,
                 "cer_lm": lm_cer,
             }
+
+        # Логирование таблицы
         self.writer.add_table(
             "predictions", pd.DataFrame.from_dict(rows, orient="index")
         )
