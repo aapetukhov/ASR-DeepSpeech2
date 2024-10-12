@@ -116,5 +116,6 @@ pretrained/
 .idea/
 __MACOSX/
 
-# too heavy lms
+# too heavy lms and their unigrams / vocabs
 3-gram.pruned.1e-7.arpa
+lexicon.txt
