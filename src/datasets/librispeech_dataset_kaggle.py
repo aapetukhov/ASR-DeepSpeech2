@@ -28,7 +28,7 @@ class LibrispeechDatasetKaggle(BaseDataset):
 
         index_path = Path("/kaggle/working/ASR-DeepSpeech2/data_index")
         index_path.mkdir(exist_ok=True, parents=True)
-        self.index_dir = index_path
+        self._index_dir = index_path
 
         if data_dir is None:
             data_dir = ROOT_PATH
