@@ -2,11 +2,14 @@ from pathlib import Path
 
 import pandas as pd
 import torch
+import numpy as np
 
 from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.metrics.utils import calc_cer, calc_wer
 from src.trainer.base_trainer import BaseTrainer
+
+from src.text_encoder import CTCTextEncoder
 
 
 class Trainer(BaseTrainer):
@@ -92,7 +95,7 @@ class Trainer(BaseTrainer):
         self.writer.add_image("spectrogram", image)
 
     def log_predictions(
-        self, text, log_probs, log_probs_length, audio_path, examples_to_log=10, **batch
+        self, text, log_probs: torch.tensor, log_probs_length: torch.tensor, audio_path, audio: torch.tensor, examples_to_log=10, **batch
     ):
         # TODO add beam search
         # Note: by improving text encoder and metrics design
@@ -105,20 +108,38 @@ class Trainer(BaseTrainer):
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
+
+        bs_texts = [self.text_encoder.ctc_beam_search(log_probs[: length].numpy(), 3) for length in log_probs_length.detach().cpu().numpy()]
+        lm_texts = [self.text_encoder.ctc_lm_beam_search(log_probs[: length].numpy(), 30) for length in log_probs_length.detach().cpu().numpy()]
+
+        tuples = list(zip(argmax_texts, bs_texts, lm_texts, text, argmax_texts_raw, audio_path))
 
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        for pred_argmax, pred_bs, pred_lm, target, raw_pred, audio_path in tuples[:examples_to_log]:
             target = self.text_encoder.normalize_text(target)
-            wer = calc_wer(target, pred) * 100
-            cer = calc_cer(target, pred) * 100
+            wer = calc_wer(target, pred_argmax) * 100
+            cer = calc_cer(target, pred_argmax) * 100
+
+            beam_wer = calc_wer(target, pred_bs) * 100
+            beam_cer = calc_cer(target, pred_bs) * 100
+
+            lm_wer = calc_wer(target, pred_lm) * 100
+            lm_cer = calc_cer(target, pred_lm) * 100
 
             rows[Path(audio_path).name] = {
+                "audio": self.writer.wandb.Audio(audio_path),
+                "aug": self.writer.wandb.Audio(audio.squeeze().numpy(), sample_rate=16000),
                 "target": target,
                 "raw prediction": raw_pred,
-                "predictions": pred,
-                "wer": wer,
-                "cer": cer,
+                "predictions": pred_argmax,
+                "beam_predictions": pred_bs,
+                "lm_predictions": pred_lm,
+                "wer_argmax": wer,
+                "cer_argmax": cer,
+                "wer_beam": beam_wer,
+                "cer_beam": beam_cer,
+                "wer_lm": lm_wer,
+                "cer_lm": lm_cer,
             }
         self.writer.add_table(
             "predictions", pd.DataFrame.from_dict(rows, orient="index")
