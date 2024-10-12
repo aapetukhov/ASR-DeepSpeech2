@@ -62,4 +62,32 @@ class BeamCERMetric(BaseMetric):
         return np.mean(cers)
 
 
-# TODO: add LM version
+class BeamCERMetric(BaseMetric):
+    def __init__(self, text_encoder: CTCTextEncoder, beam_size: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.text_encoder = text_encoder
+        self.beam_size = beam_size
+
+    def __call__(
+        self, log_probs: Tensor, log_probs_length: Tensor, text: List[str], **kwargs
+    ) -> float:
+        lengths = log_probs_length.cpu().numpy()
+        # predictions = np.exp(log_probs.detach().cpu().numpy())
+        log_probs_cpu = log_probs.detach().cpu().numpy()
+
+        def get_pred_text(log_prob_vec, length) -> str:
+            if hasattr(self.text_encoder, "lm_ctc_beam_search"):
+                return self.text_encoder.lm_ctc_beam_search(
+                    log_prob_vec[:length], self.beam_size
+                )
+            return self.text_encoder.ctc_decode(log_prob_vec[:length])
+
+        cers = [
+            calc_cer(
+                CTCTextEncoder.normalize_text(target_text),
+                get_pred_text(log_prob_vec, length),
+            )
+            for log_prob_vec, length, target_text in zip(log_probs_cpu, lengths, text)
+        ]
+
+        return np.mean(cers)
