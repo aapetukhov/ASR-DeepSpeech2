@@ -44,11 +44,19 @@ class CTCTextEncoder:
         self.char2ind = {v: k for k, v in self.ind2char.items()}
 
         if lm_path is not None:
-            print(f"LM path: {lm_path}")
+            print(f"""
+                  --------------------
+                  LM path: {lm_path}
+                  --------------------
+                  """)
 
             assert unigrams_path is not None, "LM and unigrams should be provided"
 
-            print(f"Unigrams path: {unigrams_path}")
+            print(f"""
+                  --------------------
+                  Unigrams path: {unigrams_path}
+                  --------------------
+                  """)
 
             unigrams = []
             with open(unigrams_path, "r") as file:
