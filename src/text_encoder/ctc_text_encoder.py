@@ -118,6 +118,7 @@ class CTCTextEncoder:
         return "".join(decoded)
 
     def ctc_beam_search(self, log_probs: np.ndarray, beam_size: int):
+        # TODO: debug
         time_dim, char_dim = log_probs.shape
         if char_dim > len(self.vocab):
             raise Exception(
@@ -126,7 +127,7 @@ class CTCTextEncoder:
 
         dp = {("", self.EMPTY_TOK): 1.0}
 
-        def extend_path_and_merge(dp, next_token_probs: torch.tensor, ind2char: dict):
+        def extend_path_and_merge(dp, next_token_probs: np.array, ind2char: dict):
             new_dp = defaultdict(float)
             for ind, next_token_prob in enumerate(next_token_probs):
                 cur_char = ind2char[ind]
@@ -145,7 +146,7 @@ class CTCTextEncoder:
 
         def truncate_paths(dp, beam_size):
             return dict(
-                sorted(list(dp.items()), key=lambda x: -x[1], reverse=True)[:beam_size]
+                sorted(list(dp.items()), key=lambda x: x[1], reverse=True)[:beam_size]
             )
 
         for probs in np.exp(log_probs):
