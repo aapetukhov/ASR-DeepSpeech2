@@ -60,7 +60,7 @@ class BeamWERMetric(BaseMetric):
         ]
 
         return np.mean(wers)
-    
+
 
 class LMBeamWERMetric(BaseMetric):
     def __init__(self, text_encoder: CTCTextEncoder, beam_size: int, *args, **kwargs):

@@ -1,16 +1,15 @@
+import random
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import torch
-import numpy as np
-import random
 
 from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.metrics.utils import calc_cer, calc_wer
-from src.trainer.base_trainer import BaseTrainer
-
 from src.text_encoder import CTCTextEncoder
+from src.trainer.base_trainer import BaseTrainer
 
 
 class Trainer(BaseTrainer):
@@ -96,7 +95,14 @@ class Trainer(BaseTrainer):
         self.writer.add_image("spectrogram", image)
 
     def log_predictions(
-        self, text, log_probs: torch.tensor, log_probs_length: torch.tensor, audio_path, audio: torch.tensor, examples_to_log=5, **batch
+        self,
+        text,
+        log_probs: torch.tensor,
+        log_probs_length: torch.tensor,
+        audio_path,
+        audio: torch.tensor,
+        examples_to_log=5,
+        **batch
     ):
         # TODO add beam search
         # Note: by improving text encoder and metrics design
@@ -120,13 +126,37 @@ class Trainer(BaseTrainer):
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
 
         # CTC bs
-        bs_texts = [self.text_encoder.ctc_beam_search(proba[: length], 3) for proba, length in zip(log_probas, log_probs_lengths)]
-        lm_texts = [self.text_encoder.lm_ctc_beam_search(proba[: length], 30) for proba, length in zip(log_probas, log_probs_lengths)]
+        bs_texts = [
+            self.text_encoder.ctc_beam_search(proba[:length], 3)
+            for proba, length in zip(log_probas, log_probs_lengths)
+        ]
+        lm_texts = [
+            self.text_encoder.lm_ctc_beam_search(proba[:length], 30)
+            for proba, length in zip(log_probas, log_probs_lengths)
+        ]
 
-        tuples = list(zip(argmax_texts, bs_texts, lm_texts, texts, argmax_texts_raw, audio_paths, audios))
+        tuples = list(
+            zip(
+                argmax_texts,
+                bs_texts,
+                lm_texts,
+                texts,
+                argmax_texts_raw,
+                audio_paths,
+                audios,
+            )
+        )
 
         rows = {}
-        for pred_argmax, pred_bs, pred_lm, target, raw_pred, audio_path, audio_aug in tuples:
+        for (
+            pred_argmax,
+            pred_bs,
+            pred_lm,
+            target,
+            raw_pred,
+            audio_path,
+            audio_aug,
+        ) in tuples:
             target = self.text_encoder.normalize_text(target)
             wer = calc_wer(target, pred_argmax) * 100
             cer = calc_cer(target, pred_argmax) * 100

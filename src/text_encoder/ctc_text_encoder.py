@@ -2,8 +2,8 @@ import re
 from collections import defaultdict
 from string import ascii_lowercase
 
-import torch
 import numpy as np
+import torch
 from pyctcdecode import build_ctcdecoder
 
 # TODO add CTC decode
@@ -16,7 +16,14 @@ from pyctcdecode import build_ctcdecoder
 class CTCTextEncoder:
     EMPTY_TOK = ""
 
-    def __init__(self, alphabet=None, lm_path: str = None, unigrams_path: str=None, *args, **kwargs):
+    def __init__(
+        self,
+        alphabet=None,
+        lm_path: str = None,
+        unigrams_path: str = None,
+        *args,
+        **kwargs,
+    ):
         """
         Args:
             alphabet (list): alphabet for language. If None, it will be
@@ -54,12 +61,11 @@ class CTCTextEncoder:
                 kenlm_model_path=lm_path,
                 unigrams=unigrams,
                 alpha=0.6,
-                beta=0.2
+                beta=0.2,
             )
-        
+
         else:
             print("LM path is not provided, guess we're running without LM")
-
 
     def __len__(self):
         return len(self.vocab)
@@ -130,7 +136,6 @@ class CTCTextEncoder:
             return new_dp
 
         def truncate_paths(dp, beam_size):
-
             return dict(
                 sorted(list(dp.items()), key=lambda x: -x[1], reverse=True)[:beam_size]
             )

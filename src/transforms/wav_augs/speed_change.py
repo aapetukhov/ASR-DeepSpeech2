@@ -1,5 +1,6 @@
 import torchaudio
-from torch import nn, Tensor
+from torch import Tensor, nn
+
 
 class SpeedChange(nn.Module):
     def __init__(self, speed_factor: float = 1.0, sample_rate: int = 16000):
@@ -8,5 +9,7 @@ class SpeedChange(nn.Module):
         self.sample_rate = sample_rate
 
     def forward(self, data: Tensor) -> Tensor:
-        resampled_data = torchaudio.functional.resample(data, self.sample_rate, int(self.sample_rate * self.speed_factor))
+        resampled_data = torchaudio.functional.resample(
+            data, self.sample_rate, int(self.sample_rate * self.speed_factor)
+        )
         return resampled_data

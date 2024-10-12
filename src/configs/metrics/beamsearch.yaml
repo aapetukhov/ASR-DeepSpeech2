@@ -11,7 +11,7 @@ inference: # metrics that are calculated during inference (eval)
   - _target_: src.metrics.BeamCERMetric
     name: "CER_(BeamSearch)" # it is better to avoid spaces in names
     beam_size: 5
-    
+
   - _target_: src.metrics.BeamWERMetric
     name: "WER_(BeamSearch)"
     beam_size: 5

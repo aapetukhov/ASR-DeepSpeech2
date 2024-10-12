@@ -84,21 +84,23 @@ class BaseDataset(Dataset):
         text = data_dict["text"]
         text_encoded = self.text_encoder.encode(text)
 
-        instance_data : dict = {
-            "audio": audio
-        }
-        instance_data = self.preprocess_data(instance_data) # transforming audio first
+        instance_data: dict = {"audio": audio}
+        instance_data = self.preprocess_data(instance_data)  # transforming audio first
 
-        spectrogram = self.get_spectrogram(instance_data["audio"]) # calculating spectrogram of the TRANSFORMED audio
-        spectrogram = torch.log(spectrogram + 1e-5) # for beautiful pictures when logging
+        spectrogram = self.get_spectrogram(
+            instance_data["audio"]
+        )  # calculating spectrogram of the TRANSFORMED audio
+        spectrogram = torch.log(
+            spectrogram + 1e-5
+        )  # for beautiful pictures when logging
 
         instance_data.update(
             {
-            "spectrogram": spectrogram,
-            "text": text,
-            "text_encoded": text_encoded,
-            "audio_path": audio_path,
-        }
+                "spectrogram": spectrogram,
+                "text": text,
+                "text_encoded": text_encoded,
+                "audio_path": audio_path,
+            }
         )
 
         # TODO think of how to apply wave augs before calculating spectrogram
