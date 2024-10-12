@@ -3,6 +3,8 @@ from collections import defaultdict
 from string import ascii_lowercase
 
 import torch
+import numpy as np
+from pyctcdecode import build_ctcdecoder
 
 # TODO add CTC decode
 # TODO add BPE, LM, Beam Search support
@@ -14,11 +16,15 @@ import torch
 class CTCTextEncoder:
     EMPTY_TOK = ""
 
-    def __init__(self, alphabet=None, **kwargs):
+    def __init__(self, alphabet=None, lm_path: str = None, unigrams_path: str=None, *args, **kwargs):
         """
         Args:
             alphabet (list): alphabet for language. If None, it will be
                 set to ascii
+            lm_path (str): path to language model. Usually full path to an .arpa file.
+                Will be passed to build_ctcdecoder
+            unigrams_path (str): path to file with unigrams. E.g., lexicon.txt
+                Will be parsed and passed to build_ctcdecoder
         """
 
         if alphabet is None:
@@ -29,6 +35,31 @@ class CTCTextEncoder:
 
         self.ind2char = dict(enumerate(self.vocab))
         self.char2ind = {v: k for k, v in self.ind2char.items()}
+
+        if lm_path is not None:
+            print(f"LM path: {lm_path}")
+
+            assert unigrams_path is not None, "LM and unigrams should be provided"
+
+            print(f"Unigrams path: {unigrams_path}")
+
+            unigrams = []
+            with open(unigrams_path, "r") as file:
+                for line in file:
+                    word = line.split()[0]
+                    unigrams.append(word)
+
+            self.lm_model = build_ctcdecoder(
+                labels=[self.EMPTY_TOK] + list(self.alphabet),
+                kenlm_model_path=lm_path,
+                unigrams=unigrams,
+                alpha=0.6,
+                beta=0.2
+            )
+        
+        else:
+            print("LM path is not provided, guess we're running without LM")
+
 
     def __len__(self):
         return len(self.vocab)
@@ -72,7 +103,7 @@ class CTCTextEncoder:
             last_char_ind = ind
         return "".join(decoded)
 
-    def ctc_beam_search(self, log_probs: torch.tensor, beam_size: int):
+    def ctc_beam_search(self, log_probs: np.ndarray, beam_size: int):
         time_dim, char_dim = log_probs.shape
         if char_dim > len(self.vocab):
             raise Exception(
@@ -104,7 +135,7 @@ class CTCTextEncoder:
                 sorted(list(dp.items()), key=lambda x: -x[1], reverse=True)[:beam_size]
             )
 
-        for probs in torch.exp(log_probs):
+        for probs in np.exp(log_probs):
             dp = extend_path_and_merge(
                 dp=dp, next_token_probs=probs, ind2char=self.ind2char
             )
@@ -116,8 +147,8 @@ class CTCTextEncoder:
             0
         ]  # dp[0] - это лучшие (prefix, proba), а dp[0][0] - соответственно лучший префикс
 
-    def lm_ctc_beam_search(self, log_probs: torch.tensor, beam_size: int):
-        raise NotImplementedError
+    def lm_ctc_beam_search(self, log_probs: np.ndarray, beam_size: int = 30):
+        return self.lm_model.decode(logits=log_probs, beam_width=beam_size)
 
     @staticmethod
     def normalize_text(text: str):

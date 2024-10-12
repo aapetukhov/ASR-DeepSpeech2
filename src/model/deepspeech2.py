@@ -21,18 +21,18 @@ class NormGRU(nn.Module):
         )
         self.batch_norm = nn.BatchNorm1d(hidden_dim)
 
-    def forward(self, inputs, hidden_state=None):
+    def forward(self, inputs, hs=None):
         """
         Forward pass through GRU and norm layer
         """
-        outputs, hidden_state = self.gru(inputs, hidden_state)
-        outputs = outputs.view(outputs.shape[0], outputs.shape[1], 2, -1).sum(2)
-        batch_size, time_steps = outputs.shape[1], outputs.shape[0]
-        outputs = outputs.view(batch_size * time_steps, -1)
-        outputs = self.batch_norm(outputs)
-        outputs = outputs.view(time_steps, batch_size, -1).contiguous()
+        x, hs = self.gru(inputs, hs)
+        x = x.view(x.shape[0], x.shape[1], 2, -1).sum(2)
+        batch_size, time_steps = x.shape[1], x.shape[0]
+        x = x.view(batch_size * time_steps, -1)
+        x = self.batch_norm(x)
+        x = x.view(time_steps, batch_size, -1).contiguous()
 
-        return outputs, hidden_state
+        return x, hs
 
 
 class DeepSpeech2(nn.Module):

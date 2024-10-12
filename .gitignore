@@ -115,3 +115,6 @@ pretrained/
 .vscode/
 .idea/
 __MACOSX/
+
+# too heavy lms
+3-gram.pruned.1e-7.arpa
