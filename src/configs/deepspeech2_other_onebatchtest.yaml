@@ -2,7 +2,7 @@ defaults:
   - model: deepspeech2
   - writer: wandb
   - metrics: beamsearch_lm
-  - datasets: default_other_kaggle
+  - datasets: default_other_kaggle_onebatch
   - dataloader: default
   - transforms: augs
   - _self_
@@ -29,8 +29,8 @@ text_encoder:
 
 trainer:
   log_step: 50
-  n_epochs: 200
-  epoch_len: 150
+  n_epochs: 5
+  epoch_len: 50
   device_tensors: ["spectrogram", "text_encoded"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   from_pretrained: null # path to the pretrained model
