@@ -2,7 +2,7 @@ defaults:
   - model: deepspeech2
   - writer: wandb
   - metrics: beamsearch_lm
-  - datasets: onebatchtest
+  - datasets: united_tiny
   - dataloader: onebatchtest
   - transforms: augs
   - _self_
