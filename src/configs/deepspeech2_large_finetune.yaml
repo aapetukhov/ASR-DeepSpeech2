@@ -2,7 +2,7 @@ defaults:
   - model: deepspeech2
   - writer: wandb
   - metrics: beamsearch_lm
-  - datasets: united_kaggle_smaller
+  - datasets: default_other_kaggle
   - dataloader: default
   - transforms: augs_modest
   - _self_

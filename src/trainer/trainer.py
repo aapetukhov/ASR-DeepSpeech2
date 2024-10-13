@@ -131,16 +131,16 @@ class Trainer(BaseTrainer):
         #     self.text_encoder.ctc_beam_search(proba[:length], 3)
         #     for proba, length in zip(log_probas, log_probs_lengths)
         # ]
-        lm_texts = [
-            self.text_encoder.lm_ctc_beam_search(logits_vec[:length], 25)
-            for logits_vec, length in zip(logits, log_probs_lengths)
-        ]
+        # lm_texts = [
+        #     self.text_encoder.lm_ctc_beam_search(logits_vec[:length], 25)
+        #     for logits_vec, length in zip(logits, log_probs_lengths)
+        # ]
 
         tuples = list(
             zip(
                 argmax_texts,
                 # bs_texts,
-                lm_texts,
+                # lm_texts,
                 texts,
                 argmax_texts_raw,
                 audio_paths,
@@ -152,7 +152,7 @@ class Trainer(BaseTrainer):
         for (
             pred_argmax,
             # pred_bs,
-            pred_lm,
+            # pred_lm,
             target,
             raw_pred,
             audio_path,
@@ -165,8 +165,8 @@ class Trainer(BaseTrainer):
             # beam_wer = calc_wer(target, pred_bs) * 100
             # beam_cer = calc_cer(target, pred_bs) * 100
 
-            lm_wer = calc_wer(target, pred_lm) * 100
-            lm_cer = calc_cer(target, pred_lm) * 100
+            # lm_wer = calc_wer(target, pred_lm) * 100
+            # lm_cer = calc_cer(target, pred_lm) * 100
 
             rows[Path(audio_path).name] = {
                 "audio_augmented": self.writer.wandb.Audio(audio_aug, sample_rate=16000),
@@ -174,13 +174,13 @@ class Trainer(BaseTrainer):
                 "raw prediction": raw_pred,
                 "predictions": pred_argmax,
                 # "beam_predictions": pred_bs,
-                "lm_predictions": pred_lm,
+                # "lm_predictions": pred_lm,
                 "wer_argmax": wer,
                 "cer_argmax": cer,
                 # "wer_beam": beam_wer,
                 # "cer_beam": beam_cer,
-                "wer_lm": lm_wer,
-                "cer_lm": lm_cer,
+                # "wer_lm": lm_wer,
+                # "cer_lm": lm_cer,
             }
 
         self.writer.add_table(
