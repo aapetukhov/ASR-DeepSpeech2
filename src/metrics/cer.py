@@ -14,7 +14,7 @@ from src.text_encoder.ctc_text_encoder import CTCTextEncoder
 
 
 class ArgmaxCERMetric(BaseMetric):
-    def __init__(self, text_encoder, *args, **kwargs):
+    def __init__(self, text_encoder: CTCTextEncoder, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.text_encoder = text_encoder
 
