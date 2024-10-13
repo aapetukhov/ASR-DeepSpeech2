@@ -119,3 +119,5 @@ __MACOSX/
 # too heavy lms and their unigrams / vocabs
 3-gram.pruned.1e-7.arpa
 lexicon.txt
+clean_3-gram.pruned.1e-7.arpa
+clean_lexicon.txt
