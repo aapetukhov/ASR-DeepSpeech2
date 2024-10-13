@@ -7,33 +7,33 @@ train:
     transforms:
       - transform_cfg:
           _target_: src.transforms.wav_augs.Identity
-        p: 0.7
+        p: 0.8
       - transform_cfg:
           _target_: src.transforms.wav_augs.Gain
           sample_rate: 16000
-        p: 0.06
+        p: 0.04
       - transform_cfg:
           _target_: src.transforms.wav_augs.PitchShifting
           sample_rate: 16000
           min_transpose_semitones: -2
           max_transpose_semitones: 2
-        p: 0.06
+        p: 0.04
       - transform_cfg:
           _target_: src.transforms.wav_augs.ColoredNoise
           sample_rate: 16000
           min_snr_in_db: 5
           max_snr_in_db: 15
-        p: 0.06
+        p: 0.04
       - transform_cfg:
           _target_: src.transforms.wav_augs.SpeedChange
           sample_rate: 16000
           speed_factor: 0.8
-        p: 0.06
+        p: 0.04
       - transform_cfg:
           _target_: src.transforms.wav_augs.SpeedChange
           sample_rate: 16000
           speed_factor: 1.2
-        p: 0.06
+        p: 0.04
 
 inference:
   get_spectrogram:

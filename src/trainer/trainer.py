@@ -8,7 +8,6 @@ import torch
 from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.metrics.utils import calc_cer, calc_wer
-from src.text_encoder import CTCTextEncoder
 from src.trainer.base_trainer import BaseTrainer
 
 
@@ -97,6 +96,7 @@ class Trainer(BaseTrainer):
     def log_predictions(
         self,
         text,
+        logits: torch.tensor,
         log_probs: torch.tensor,
         log_probs_length: torch.tensor,
         audio_path,
@@ -112,6 +112,7 @@ class Trainer(BaseTrainer):
         indices = random.sample(range(len(text)), min(examples_to_log, len(text)))
 
         texts = [text[i] for i in indices]
+        logits = logits[indices].detach().cpu().numpy()
         log_probas = log_probs[indices].detach().cpu().numpy()
         log_probs_lengths = log_probs_length[indices].detach().cpu().numpy()
         audio_paths = [audio_path[i] for i in indices]
@@ -126,19 +127,19 @@ class Trainer(BaseTrainer):
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
 
         # CTC bs
-        bs_texts = [
-            self.text_encoder.ctc_beam_search(proba[:length], 3)
-            for proba, length in zip(log_probas, log_probs_lengths)
-        ]
+        # bs_texts = [
+        #     self.text_encoder.ctc_beam_search(proba[:length], 3)
+        #     for proba, length in zip(log_probas, log_probs_lengths)
+        # ]
         lm_texts = [
-            self.text_encoder.lm_ctc_beam_search(proba[:length], 30)
-            for proba, length in zip(log_probas, log_probs_lengths)
+            self.text_encoder.lm_ctc_beam_search(logits_vec[:length], 25)
+            for logits_vec, length in zip(logits, log_probs_lengths)
         ]
 
         tuples = list(
             zip(
                 argmax_texts,
-                bs_texts,
+                # bs_texts,
                 lm_texts,
                 texts,
                 argmax_texts_raw,
@@ -150,7 +151,7 @@ class Trainer(BaseTrainer):
         rows = {}
         for (
             pred_argmax,
-            pred_bs,
+            # pred_bs,
             pred_lm,
             target,
             raw_pred,
@@ -161,28 +162,27 @@ class Trainer(BaseTrainer):
             wer = calc_wer(target, pred_argmax) * 100
             cer = calc_cer(target, pred_argmax) * 100
 
-            beam_wer = calc_wer(target, pred_bs) * 100
-            beam_cer = calc_cer(target, pred_bs) * 100
+            # beam_wer = calc_wer(target, pred_bs) * 100
+            # beam_cer = calc_cer(target, pred_bs) * 100
 
             lm_wer = calc_wer(target, pred_lm) * 100
             lm_cer = calc_cer(target, pred_lm) * 100
 
             rows[Path(audio_path).name] = {
-                "audio": self.writer.wandb.Audio(audio_aug, sample_rate=16000),
+                "audio_augmented": self.writer.wandb.Audio(audio_aug, sample_rate=16000),
                 "target": target,
                 "raw prediction": raw_pred,
                 "predictions": pred_argmax,
-                "beam_predictions": pred_bs,
+                # "beam_predictions": pred_bs,
                 "lm_predictions": pred_lm,
                 "wer_argmax": wer,
                 "cer_argmax": cer,
-                "wer_beam": beam_wer,
-                "cer_beam": beam_cer,
+                # "wer_beam": beam_wer,
+                # "cer_beam": beam_cer,
                 "wer_lm": lm_wer,
                 "cer_lm": lm_cer,
             }
 
-        # Логирование таблицы
         self.writer.add_table(
             "predictions", pd.DataFrame.from_dict(rows, orient="index")
         )

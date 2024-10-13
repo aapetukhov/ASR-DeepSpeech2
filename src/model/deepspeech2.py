@@ -122,6 +122,7 @@ class DeepSpeech2(nn.Module):
 
         log_probs = nn.functional.log_softmax(logits, dim=-1)
         return {
+            "logits": logits,
             "log_probs": log_probs,
             "log_probs_length": self.transform_input_lengths(spectrogram_length),
         }

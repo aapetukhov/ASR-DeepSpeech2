@@ -7,7 +7,7 @@ inference: # metrics that are calculated during inference (eval)
     name: "WER_(Argmax)"
   - _target_: src.metrics.LMBeamCERMetric
     name: "CER_(LM_BeamSearch)" # it is better to avoid spaces in names
-    beam_size: 5
+    beam_size: 50
   - _target_: src.metrics.LMBeamWERMetric
     name: "WER_(LM_BeamSearch)"
-    beam_size: 5
+    beam_size: 50
