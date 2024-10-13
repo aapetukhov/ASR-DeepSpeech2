@@ -4,12 +4,12 @@ defaults:
   - metrics: beamsearch_lm
   - datasets: default_other_kaggle
   - dataloader: default
-  - transforms: augs_modest
+  - transforms: example_only_instance
   - _self_
 
 optimizer:
   _target_: torch.optim.AdamW
-  lr: 0.0002
+  lr: 0.0001
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.OneCycleLR
@@ -29,7 +29,7 @@ text_encoder:
 
 trainer:
   log_step: 50
-  n_epochs: 200
+  n_epochs: 30
   epoch_len: 200
   device_tensors: ["spectrogram", "text_encoded"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
@@ -39,7 +39,7 @@ trainer:
   monitor: "min val_loss" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
   save_period: 5 # checkpoint each save_period epochs in addition to the best epoch
   early_stop: ${trainer.n_epochs} # epochs for early stopping
-  save_dir: "deepspeech2_augs_360"
+  save_dir: "deepspeech2_other_finetune"
   seed: 1
   max_grad_norm: 8
   # TODO: maybe add max_grad_norm
