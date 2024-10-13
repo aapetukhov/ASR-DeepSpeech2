@@ -161,7 +161,7 @@ class CTCTextEncoder:
             0
         ]  # dp[0] - это лучшие (prefix, proba), а dp[0][0] - соответственно лучший префикс
 
-    def lm_ctc_beam_search(self, logits: np.ndarray, beam_size: int = 30):
+    def lm_ctc_beam_search(self, logits: np.ndarray, beam_size: int = 20):
         return self.lm_model.decode(logits=logits, beam_width=beam_size)
 
     @staticmethod
