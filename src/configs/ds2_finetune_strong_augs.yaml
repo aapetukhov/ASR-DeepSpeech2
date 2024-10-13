@@ -2,7 +2,7 @@ defaults:
   - model: deepspeech2
   - writer: wandb
   - metrics: default
-  - datasets: default_360_kaggle
+  - datasets: 360_kaggle_test
   - dataloader: default
   - transforms: augs_strong
   - _self_
