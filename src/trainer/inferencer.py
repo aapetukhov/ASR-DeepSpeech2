@@ -148,6 +148,8 @@ class Inferencer(BaseTrainer):
             label = batch["text"][i]
             length = batch["log_probs_length"][i].clone()
             # pred_label = logits.argmax(dim=-1)
+            logits_cpu = logits.detach().cpu().numpy()
+            log_probs_cpu = log_probs.detach().cpu().numpy()
             pred_label = self.text_encoder.ctc_beam_search(log_probs[:length], 3)
             pred_lm = self.text_encoder.lm_ctc_beam_search(logits[:length], 100)
 
