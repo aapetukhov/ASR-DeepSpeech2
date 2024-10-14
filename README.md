@@ -1,5 +1,7 @@
 # Automatic Speech Recognition (ASR) with PyTorch
 
+Ссылка на отчёт: https://wandb.ai/aapetukhov-new-economic-school/asr_project/reports/ASR-DeepSpeech-HW--Vmlldzo5NzE3ODgz
+
 <p align="center">
   <a href="#about">About</a> •
   <a href="#installation">Installation</a> •
