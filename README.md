@@ -12,7 +12,7 @@
 
 ## About
 
-This repository contains a template for solving ASR task with PyTorch. This template branch is a part of the [HSE DLA course](https://github.com/markovka17/dla) ASR homework. Some parts of the code are missing (or do not follow the most optimal design choices...) and students are required to fill these parts themselves (as well as writing their own models, etc.).
+This repository contains a project on ASR with all necessary scripts provided for training and evaluating the model. It is worth noting that with better GPUs than a single P100 more extended training time would have been available, so higher results would have been achieved. You can also use a different language model, I use the pruned one because of the resources constraints.
 
 See the task assignment [here](https://github.com/markovka17/dla/tree/2024/hw1_asr).
 
@@ -56,20 +56,82 @@ Follow these steps to install the project:
    pre-commit install
    ```
 
-## How To Use
+## How To Train
 
-To train a model, run the following command:
+To train a model, log in to wandb and run the following commands:
 
+1. First, train the model with
+   
 ```bash
-python3 train.py -cn=CONFIG_NAME HYDRA_CONFIG_ARGUMENTS
+python train.py -cn=deepspeech2
 ```
 
-Where `CONFIG_NAME` is a config from `src/configs` and `HYDRA_CONFIG_ARGUMENTS` are optional arguments.
+2. Then, train it with
+```bash
+python train.py -cn=deepspeech2_360_augs_kaggle
+```
 
-To run inference (evaluate the model or save predictions):
+3. Then, for clean,
+```bash
+python train.py -cn=ds2_finetune_strong_augs
+```
+
+Or, for other,
+```bash
+python train.py -cn=ds2_large_finetune
+```
+
+Where all configs are from `src/configs` and `HYDRA_CONFIG_ARGUMENTS` are optional arguments.
+
+# How To Evaluate
+
+Download the pretrained models and clean lexicon from [here](https://drive.google.com/drive/u/1/folders/1oBV3LEffGjLxUKjYma7bxH1XPqcjiCdb) and locate them in your directory. You can also do this by running this commands in command line, but be aware that the files are large. **You can download only the clean model because it achieved the highest scores for my grade, but the other model might also make a hit.**
+
+0. To download:
 
 ```bash
-python3 inference.py HYDRA_CONFIG_ARGUMENTS
+# install gdown
+pip install gdown
+
+# download best clean model
+gdown 1XpAuRCg8phPTJxmzPyvrAUpc02ZgQC0O
+
+# download the best other model
+gdown 197CiNFeESxA6Mo6S5tv-hV8xF528WUrm
+
+# download pretrained LM
+gdown 1hqkXgR-OENH3uoILTInHCNKbmQFm-5wr
+
+# download the lexicon for the LM, the default one is wrong
+gdown 1HhqKQgOE4O-mnTbTm9s1JHMFZQTGpyyf
+```
+
+1. To run inference **LOCALLY**:
+
+To run inference on clean (evaluate the model or save predictions):
+
+```bash
+python inference.py -cn=inference_clean
+```
+
+To run inference on other:
+
+```bash
+python inference.py -cn=inference_other
+```
+
+2. To run inference **ON KAGGLE**:
+
+To run inference on clean (evaluate the model or save predictions) in KAGGLE:
+
+```bash
+python inference.py -cn=inference_clean_local
+```
+
+To run inference on other:
+
+```bash
+python inference.py -cn=inference_other_local
 ```
 
 ## Credits
