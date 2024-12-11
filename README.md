@@ -111,20 +111,6 @@ gdown 1HhqKQgOE4O-mnTbTm9s1JHMFZQTGpyyf
 To run inference on clean (evaluate the model or save predictions):
 
 ```bash
-python inference.py -cn=inference_clean
-```
-
-To run inference on other:
-
-```bash
-python inference.py -cn=inference_other
-```
-
-2. To run inference **ON KAGGLE**:
-
-To run inference on clean (evaluate the model or save predictions) in KAGGLE:
-
-```bash
 python inference.py -cn=inference_clean_local
 ```
 
@@ -132,6 +118,20 @@ To run inference on other:
 
 ```bash
 python inference.py -cn=inference_other_local
+```
+
+2. To run inference **ON KAGGLE**:
+
+To run inference on clean (evaluate the model or save predictions) in KAGGLE:
+
+```bash
+python inference.py -cn=inference_clean
+```
+
+To run inference on other:
+
+```bash
+python inference.py -cn=inference_other
 ```
 
 ## Credits
