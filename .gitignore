@@ -121,3 +121,7 @@ __MACOSX/
 lexicon.txt
 clean_3-gram.pruned.1e-7.arpa
 clean_lexicon.txt
+
+best_clean_model.pth
+sample_test
+onetest.yaml

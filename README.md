@@ -114,10 +114,13 @@ To run inference on clean (evaluate the model or save predictions):
 python inference.py -cn=inference_clean_local
 ```
 
+```bash
+python inference.py -cn=inference_clean_local '+datasets.test.audio_dir=<YOUR_AUDIO_DIR>' '+datasets.test.transcription_dir=<YOUR_TRANSCRIPTION_DIR>'
+
 To run inference on other:
 
 ```bash
-python inference.py -cn=inference_other_local
+python inference.py -cn=inference_other_local '+datasets.test.audio_dir=<YOUR_AUDIO_DIR>' '+datasets.test.transcription_dir=<YOUR_TRANSCRIPTION_DIR>'
 ```
 
 2. To run inference **ON KAGGLE**:
@@ -125,13 +128,13 @@ python inference.py -cn=inference_other_local
 To run inference on clean (evaluate the model or save predictions) in KAGGLE:
 
 ```bash
-python inference.py -cn=inference_clean
+python inference.py -cn=inference_clean '+datasets.test.audio_dir=<YOUR_AUDIO_DIR>' '+datasets.test.transcription_dir=<YOUR_TRANSCRIPTION_DIR>'
 ```
 
 To run inference on other:
 
 ```bash
-python inference.py -cn=inference_other
+python inference.py -cn=inference_other '+datasets.test.audio_dir=<YOUR_AUDIO_DIR>' '+datasets.test.transcription_dir=<YOUR_TRANSCRIPTION_DIR>'
 ```
 
 ## Credits
