@@ -1,6 +1,6 @@
 # Automatic Speech Recognition (ASR) with PyTorch
 
-Ссылка на отчёт: https://wandb.ai/aapetukhov-new-economic-school/asr_project/reports/ASR-DeepSpeech-HW--Vmlldzo5NzE3ODgz
+W&B report link: https://wandb.ai/aapetukhov-new-economic-school/asr_project/reports/ASR-DeepSpeech-HW--Vmlldzo5NzE3ODgz
 
 <p align="center">
   <a href="#about">About</a> •
@@ -12,9 +12,9 @@
 
 ## About
 
-This repository contains a project on ASR with all necessary scripts provided for training and evaluating the model. It is worth noting that with better GPUs than a single P100 more extended training time would have been available, so higher results would have been achieved. You can also use a different language model, I use the pruned one because of the resources constraints.
+Automatic Speech Recognition model DeepSpeech2 implemented from scratch in PyTorch. 
 
-See the task assignment [here](https://github.com/markovka17/dla/tree/2024/hw1_asr).
+This repository contains a project on Automatic Speech Recognition (ASR) with all necessary scripts and instructions for training and infering the model. For better evaluation results, you can also use a different language model, I use the pruned one because of the resources constraints.
 
 ## Installation
 
