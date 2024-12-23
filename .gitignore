@@ -125,3 +125,5 @@ clean_lexicon.txt
 best_clean_model.pth
 sample_test
 onetest.yaml
+
+.DS_Store
