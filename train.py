@@ -36,6 +36,7 @@ def main(config):
     else:
         device = config.trainer.device
 
+    # TODO: add tensorboard logging as an option
     logger.info(f"Using device: {device}")
 
     # setup text_encoder
