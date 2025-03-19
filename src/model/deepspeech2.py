@@ -47,6 +47,7 @@ class DeepSpeech2(nn.Module):
         """
         super().__init__()
 
+        # TODO; automate creation from config
         self.conv_params = {
             "conv1": {"padding": (20, 5), "kernel_size": (41, 11), "stride": (2, 2)},
             "conv2": {"padding": (10, 5), "kernel_size": (21, 11), "stride": (2, 2)},
