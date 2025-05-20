@@ -127,3 +127,7 @@ sample_test
 onetest.yaml
 
 .DS_Store
+*.ipynb
+*.wav
+*.ogg
+*.oga
